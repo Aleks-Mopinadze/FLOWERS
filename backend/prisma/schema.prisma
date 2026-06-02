@@ -1,7 +1,100 @@
 generator client {
   provider = "prisma-client"
+  output   = "../generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
+}
+
+model User {
+  id String @id @default(uuid())
+  name String
+  email String @unique
+  password String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  orders Order[]
+}
+
+model Product {
+  id Int @id @default(autoincrement())
+  name String
+  product_type ProductType
+  price Decimal
+  is_available Boolean @default(true)
+  bouquet Bouquet?
+
+  order_items OrderItem[]
+  Bouquet_flowers BouquetFlower[]
+}
+
+model Order {
+  id Int @id @default(autoincrement())
+  user_id String
+  order_date DateTime @default(now())
+  payment_method PaymentMethod
+  total_price Decimal
+  status DeliveryStatus @default(pending)
+
+  order_items OrderItem[]
+
+  user User @relation(fields: [user_id], references: [id])
+
+  @@index([user_id])
+}
+
+model OrderItem {
+  id Int @id @default(autoincrement())
+  product_id Int
+  order_id Int
+  quantity Int
+  price_at_purchase Decimal
+
+  product Product @relation(fields: [product_id], references: [id])
+  order Order @relation(fields: [order_id], references: [id])
+
+  @@index([order_id])
+  @@index([product_id])
+}
+
+model Bouquet {
+  product_id Int @id
+  flowers BouquetFlower[]
+
+  product Product @relation(fields: [product_id], references: [id])
+}
+
+model BouquetFlower {
+  bouquet_id Int
+  product_id Int
+  quantity Int
+
+  product Product @relation(fields: [product_id], references: [id])
+  bouquet Bouquet @relation(fields: [bouquet_id], references: [product_id])
+
+  @@id([bouquet_id, product_id])
+  @@index([product_id])
+}
+
+
+
+enum PaymentMethod {
+  cash
+  card
+}
+
+enum DeliveryStatus {
+  pending
+  complete
+}
+
+enum ProductType {
+  alcohol
+  toys
+  flowers
+  cakes
+  balloons
+  craft
 }
