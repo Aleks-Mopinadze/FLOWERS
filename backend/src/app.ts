@@ -4,7 +4,9 @@ import productsRouter from "./routes/product.routes";
 import ordersRouter from "./routes/order.routes";
 import authRouter from "./routes/auth.routes";
 import usersRouter from "./routes/user.route";
+
 const app = express();
+app.use(express.json());
 
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/products", productsRouter);
