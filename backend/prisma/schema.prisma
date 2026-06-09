@@ -21,14 +21,24 @@ model User {
 model Product {
   id Int @id @default(autoincrement())
   name String
-  product_type ProductType
   price Decimal
   is_available Boolean @default(true)
-  bouquet Bouquet?
-
+  product_category_id Int
+  description String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
   order_items OrderItem[]
-  Bouquet_flowers BouquetFlower[]
+
+  product_category ProductCategory @relation(fields: [product_category_id], references: [id])
 }
+
+model ProductCategory {
+  id Int @id @default(autoincrement())
+  name String @unique
+
+  products Product[]
+}
+
 
 model Order {
   id Int @id @default(autoincrement())
@@ -59,26 +69,6 @@ model OrderItem {
   @@index([product_id])
 }
 
-model Bouquet {
-  product_id Int @id
-  flowers BouquetFlower[]
-
-  product Product @relation(fields: [product_id], references: [id])
-}
-
-model BouquetFlower {
-  bouquet_id Int
-  product_id Int
-  quantity Int
-
-  product Product @relation(fields: [product_id], references: [id])
-  bouquet Bouquet @relation(fields: [bouquet_id], references: [product_id])
-
-  @@id([bouquet_id, product_id])
-  @@index([product_id])
-}
-
-
 
 enum PaymentMethod {
   cash
@@ -88,13 +78,4 @@ enum PaymentMethod {
 enum DeliveryStatus {
   pending
   complete
-}
-
-enum ProductType {
-  alcohol
-  toys
-  flowers
-  cakes
-  balloons
-  craft
 }
