@@ -1,3 +1,5 @@
+import { QueryParams } from "../schemas/products.schema";
+
 export interface signUpProps {
   name: string;
   email: string;
