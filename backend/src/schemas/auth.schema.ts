@@ -1,7 +1,5 @@
 import { z } from "zod";
-
-const notProvidedInput = "Missing data";
-const incorrectInput = "Incorrect data format";
+import { notProvidedInput, incorrectInput } from "./shared.schema";
 
 const emailField = z.email({ error: notProvidedInput });
 
