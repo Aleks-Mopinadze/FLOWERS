@@ -34,11 +34,12 @@ export const authenticate: RequestHandler = async (req, res, next) => {
     });
 
     if (!user)
-      return res.status(401).json({ success: true, message: "User not found" });
+      return res.status(401).json({ success: false, message: "User not found" });
 
-    next();
     req.user = user;
+    next();
   } catch (error) {
+
     if (error instanceof TokenExpiredError) {
       return res
         .status(401)

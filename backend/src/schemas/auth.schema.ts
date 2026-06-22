@@ -1,23 +1,23 @@
-import { z } from "zod";
-import { notProvidedInput, incorrectInput } from "./shared.schema";
+import {z} from "zod";
 
-const emailField = z.email({ error: notProvidedInput });
+
+const emailField = z.email();
+const passwordField = z.string().min(8);
 
 export const signupSchema = z.object({
-  name: z
-    .string({ error: notProvidedInput })
-    .trim()
-    .min(2, { error: incorrectInput })
-    .max(20, { error: incorrectInput }),
-  email: emailField,
-  password: z
-    .string({ error: notProvidedInput })
-    .min(8, { error: incorrectInput }),
+    name: z
+        .string()
+        .trim()
+        .min(2)
+        .max(20),
+    email: emailField,
+    password: passwordField
 });
 
 export const signInSchema = z.object({
-  email: emailField,
-  password: z
-    .string({ error: notProvidedInput })
-    .min(8, { error: incorrectInput }),
+    email: emailField,
+    password: passwordField,
 });
+
+export type SignUpInput = z.infer<typeof signupSchema>;
+export type SignInInput = z.infer<typeof signInSchema>;
