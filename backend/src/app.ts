@@ -4,6 +4,7 @@ import productsRouter from "./routes/product.routes";
 import ordersRouter from "./routes/order.routes";
 import authRouter from "./routes/auth.routes";
 import usersRouter from "./routes/user.route";
+import {ErrorMiddleware} from "./middlewares/error.middleware";
 
 const app = express();
 app.use(express.json());
@@ -13,8 +14,10 @@ app.use("/api/v1/products", productsRouter);
 app.use("/api/v1/orders", ordersRouter);
 app.use("/api/v1/users", usersRouter);
 
+app.use(ErrorMiddleware)
+
 app.get("/", (req, res) => {
-  res.send("hello");
+  res.send("Welcome to Flowers store API");
 });
 
 app.listen(env.PORT, env.HOST, () => {

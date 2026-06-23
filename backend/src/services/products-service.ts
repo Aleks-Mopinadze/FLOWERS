@@ -1,15 +1,17 @@
 import {Prisma} from "../../generated/prisma/client";
 import {prisma} from "../lib/prisma";
 import {ProductData, QueryParams, updateProductData} from "../schemas/products.schema";
+import {AppError} from "../utils/errors";
 
 export const productService = {
     async getProducts({page, limit, category, sort, search}: QueryParams) {
+        console.log(category)
         const whereClause: Prisma.ProductWhereInput = {
             is_available: true,
         };
 
         if (category && category !== "all") {
-            whereClause.product_category = {name: category};
+            whereClause.product_category = {name: {equals: category, mode: 'insensitive'}};
         }
 
         if (search) {
@@ -32,6 +34,7 @@ export const productService = {
                 orderBy: orderMapping[sort],
                 skip: (page - 1) * limit,
                 take: limit,
+                include: {product_category: true}
             }),
             prisma.product.count({where: whereClause}),
         ]);
@@ -45,7 +48,7 @@ export const productService = {
             hasNextPage: page < totalPages,
         };
 
-        return {data: products, metaData};
+        return {metaData, data: products};
     },
     async getProduct(id: number) {
         const product = await prisma.product.findUnique({
@@ -53,7 +56,7 @@ export const productService = {
             include: {product_category: true},
         });
         if (!product) {
-            throw new Error("Product not found");
+            throw new AppError('Product not found', 404);
         }
         return product;
     },
@@ -63,49 +66,42 @@ export const productService = {
         });
 
         if (!existCategory) {
-            throw new Error("Category does not exist");
+            throw new AppError('Category not found', 404);
         }
 
-        const newProduct = await prisma.product.create({
+        return prisma.product.create({
             data: {
                 name,
-                price,
+                price: new Prisma.Decimal(price),
                 is_available: isAvailable,
                 product_category_id: categoryId,
                 description,
             },
             include: {product_category: true},
         });
-
-        if (!newProduct) {
-            throw new Error("Internal server error");
-        }
-
-        return newProduct;
     },
     async updateProduct({id, name, isAvailable, price, description, categoryId}:updateProductData){
 
         const existCategory = await prisma.productCategory.findUnique({where: {id: categoryId}})
 
         if( !existCategory){
-            throw new Error("Category or Product does not exists");
+            throw new AppError('Category or Product does not exists', 404);
         }
 
-        const updatedProduct = await prisma.product.update({
+        return  prisma.product.update({
             where: {id},
-            data: {name, is_available: isAvailable, price, description, product_category_id: categoryId},
+            data: {
+                name,
+                is_available: isAvailable,
+                price: new Prisma.Decimal(price),
+                description,
+                product_category_id: categoryId},
         })
-
-        if(!updatedProduct){
-            throw new Error("cant update product");
-        }
-
-        return updatedProduct
     },
     async deleteProduct(id: number) {
         const result = await prisma.product.delete({where: {id}})
         if(!result) {
-            throw new Error("Cannot delete product");
+            throw new AppError("Cannot delete product", 500);
         }
         return result;
     }

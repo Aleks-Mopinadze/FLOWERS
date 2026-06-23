@@ -1,51 +1,49 @@
 import { z } from "zod";
+import { pageField, limitField} from "./shared.schema";
 
-import { notProvidedInput, incorrectInput } from "./shared.schema";
+export const idField =  z.coerce.number('Invalid format id').int('Invalid format id').positive('Invalid format id');
+
+const descriptionField =  z
+        .string()
+        .trim()
+        .min(2)
+        .max(300);
+
+const nameField = z
+        .string()
+        .trim()
+        .min(2)
+        .max(50);
+
 
 export const paginationSchema = z.object({
-  page: z.coerce.number().int().positive().default(1).catch(1),
-  limit: z.coerce.number().int().positive().max(50).default(10).catch(10),
-  category: z.string().default("all").catch("all"),
+  page: pageField,
+  limit: limitField,
+  category: z.string().transform(str => str.replace('-', ' ')).default("all").catch("all"),
   sort: z.enum(["asc", "desc", "new"]).default("new").catch("new"),
   search: z.string().optional().catch(undefined),
 });
 
-export type QueryParams = z.infer<typeof paginationSchema>;
-
 export const productSchema = z.object({
-  name: z
-    .string({ error: notProvidedInput })
-    .trim()
-    .min(2, { error: incorrectInput })
-    .max(50, { error: incorrectInput }),
-  price: z.coerce.number({ error: incorrectInput }).int().positive(),
+  name: nameField,
+  price: z.coerce.number().positive(),
   isAvailable: z.boolean().default(true).optional(),
-  categoryId: z.coerce.number({ error: incorrectInput }).int().positive(),
-  description: z
-    .string({ error: notProvidedInput })
-    .trim()
-    .min(2, { error: incorrectInput })
-    .max(300, { error: incorrectInput }),
+  categoryId: idField,
+  description: descriptionField
 });
-
-export type ProductData = z.infer<typeof productSchema>;
-
 
 export const updateProductSchema = z.object({
-  id: z.coerce.number({ error: incorrectInput }).int({ error: incorrectInput }).positive(),
-  name: z
-      .string({ error: notProvidedInput })
-      .trim()
-      .min(2, { error: incorrectInput })
-      .max(50, { error: incorrectInput }),
-  price: z.coerce.number({ error: incorrectInput }).int().positive(),
-  isAvailable: z.boolean().default(true).optional(),
-  categoryId: z.coerce.number({ error: incorrectInput }).int().positive(),
-  description: z
-      .string({ error: notProvidedInput })
-      .trim()
-      .min(2, { error: incorrectInput })
-      .max(300, { error: incorrectInput }),
+  id: idField,
+  name: nameField,
+  price: z.coerce.number().positive(),
+  isAvailable: z.boolean().optional().default(true),
+  categoryId: idField,
+  description: descriptionField
 });
 
+
+
+
+export type QueryParams = z.infer<typeof paginationSchema>;
 export type updateProductData = z.infer<typeof updateProductSchema>;
+export type ProductData = z.infer<typeof productSchema>;
